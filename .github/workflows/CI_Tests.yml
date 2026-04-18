@@ -1,14 +1,29 @@
-name: CI
+name: Run tests, publish to Testiny, create Jira bugs
+
 on:
   push:
+    branches: [ main ]
   pull_request:
 
 jobs:
-  import-junit-results:
+  test-and-report:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Import JUnit results to Testiny
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Run test suite
+        run: mvn clean test
+
+      - name: Import JUnit results into Testiny
+        if: always()
         env:
           TESTINY_API_KEY: ${{ secrets.TESTINY_API_KEY }}
         run: |
