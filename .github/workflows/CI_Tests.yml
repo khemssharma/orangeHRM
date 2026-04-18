@@ -1,0 +1,18 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  import-junit-results:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import JUnit results to Testiny
+        env:
+          TESTINY_API_KEY: ${{ secrets.TESTINY_API_KEY }}
+        run: |
+          npx @testiny/cli automation \
+            --project STDNO \
+            --source "surefire-tests" \
+            --junit target/surefire-reports/*.xml
