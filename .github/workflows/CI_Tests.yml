@@ -22,6 +22,7 @@ jobs:
       - name: Run test suite
         run: mvn clean test
 
+
       - name: Import JUnit results into Testiny
         if: always()
         env:
@@ -31,3 +32,25 @@ jobs:
             --project STDNO \
             --source "surefire-tests" \
             --junit target/surefire-reports/*.xml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        if: always()
+        run: pip install requests
+
+      - name: Create Jira bugs for failed test cases
+        if: always()
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
+          TESTINY_PROJECT_KEY: STDNO
+          TESTINY_SOURCE: surefire-tests
+          GIT_BRANCH: ${{ github.ref_name }}
+          GIT_COMMIT: ${{ github.sha }}
+        run: python .github/scripts/create_jira_bugs_from_junit.py
